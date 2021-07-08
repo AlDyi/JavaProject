@@ -1,45 +1,154 @@
 package library;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 public class Books {
-    Map<Integer, List<Object>> map1 = new HashMap<Integer, List<Object>>();
-    Integer i = 0;
+    File file = new File("FileBooks");
 
-    void AddBook(String name, String author, Integer number_of_copies, Integer number_of_issue) { //Добавление книги
-        map1.put(i++, Arrays.<Object>asList(name, author, number_of_copies, number_of_issue));
+    void addBook(Book book) throws IOException { //Добавление книги
+        FileWriter fileWriter = new FileWriter(file, true);
+        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+        bufferedWriter.write( book.id + ", " + book.name + ", " + book.author + ", " + book.numberOfCopies + ", " + book.numberOfIssue + '\n');
+        bufferedWriter.close();
         System.out.println("Данные добавлены");
     }
 
-    void DeleteBook() { //Удаление книги
-        map1.remove(0);
+    void deleteBook(Integer id) throws IOException { //Удаление книги
+        Scanner scanner = new Scanner(file);
+        Books length = new Books();
+        if (length.countFile(id) == -1) {
+            System.out.println("Данная книга не найдена");
+            return;
+        }
+        String[][] buffer = new String[length.countFile(id)][5];
+        int j = 0;
+        while (scanner.hasNextLine() && j < buffer.length) {
+            String line = scanner.nextLine();
+            if (line.contains(Integer.toString(id))) {
+                System.out.println(line);
+                continue;
+            }
+            else {
+                String[] splitLine = line.split(", ");
+                for (int k = 0; k < buffer[j].length; k++) {
+                    buffer[j][k] = splitLine[k];
+                }
+                j++;
+            }
+
+        }
+        FileWriter fileReWriter = new FileWriter(file, false);
+        BufferedWriter bufferedWriter = new BufferedWriter(fileReWriter);
+        StringBuilder lineInFile = new StringBuilder();
+        for (String[] strings : buffer) {
+            for (int l = 0; l < strings.length; l++) {
+                if (l == strings.length - 1) {
+                    lineInFile.append(strings[l]).append('\n');
+                } else {
+                    lineInFile.append(strings[l]).append(", ");
+                }
+            }
+        }
+        bufferedWriter.write(lineInFile.toString());
+        bufferedWriter.close();
+        scanner.close();
         System.out.println("Данные удалены");
     }
 
-    void PrintBook() { //Вывести данные о последней книге
-        System.out.println(map1.get(i-1));
+    int countFile(int id) throws FileNotFoundException { //Считает количество строк в файле для создания массива
+        Scanner scanner = new Scanner(file);
+        int i = 0;
+        int j = -1;
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            if (line.contains(Integer.toString(id))) {
+                j++;
+            }
+            else
+            {
+                i++;
+            }
+        }
+        scanner.close();
+        return (j == -1 ? j : i);
     }
 
-    void FindBookAuthor(String author) { //Найти книгу по автору
-        for (int i = 0; i < map1.size(); i++) {
-            List<Object> mylist = map1.get(i);
-            if (mylist.get(1) == author)
-                System.out.println(map1.get(i));
-            else
-                System.out.println("Автор не найден");
+    void findBookAuthorOrName(String authorOrName) throws FileNotFoundException { //Найти книгу по автору или названию
+        Scanner scanner = new Scanner(file);
+        int i = 0;
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            String lowerLine = line.toLowerCase();
+            if (lowerLine.contains(authorOrName.toLowerCase())) {
+                System.out.println(line);
+                i++;
+            }
+        }
+        if (i == 0) {
+            System.out.println("Данные не найдены!");
+        }
+        scanner.close();
+    }
+
+    void changeBookAuthor (Integer id, String author) throws IOException { //Изменить автора книги по id
+        Scanner scanner = new Scanner(file);
+        String name;
+        int numberOfCopies;
+        int numberOfIssue;
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            if (line.contains(Integer.toString(id))) {
+                String[] splitLine = line.split(", ");
+                name = splitLine[0];
+                numberOfCopies = Integer.parseInt(splitLine[2]);
+                numberOfIssue = Integer.parseInt(splitLine[3]);
+                deleteBook(id);
+                Book newBook = new Book(id, name, author, numberOfCopies, numberOfIssue);
+            } else {
+                System.out.println("Книга не найдена");
+            }
         }
     }
 
-    void FindBookName(String name) { //Найти книгу по названию 
-        for (int i = 0; i < map1.size(); i++) {
-            List<Object> mylist = map1.get(i);
-            if (mylist.get(0) == name)
-                System.out.println(map1.get(i));
-            else
+    void changeBookName (Integer id, String name) throws IOException { //Изменить название книги по id
+        Scanner scanner = new Scanner(file);
+        String author;
+        int numberOfCopies;
+        int numberOfIssue;
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            if (line.contains(Integer.toString(id))) {
+                String[] splitLine = line.split(", ");
+                author = splitLine[1];
+                numberOfCopies = Integer.parseInt(splitLine[2]);
+                numberOfIssue = Integer.parseInt(splitLine[3]);
+                deleteBook(id);
+                Book newBook = new Book(id, name, author, numberOfCopies, numberOfIssue);
+            } else {
                 System.out.println("Книга не найдена");
+            }
+        }
+    }
+
+    void changeBookCopies (int id, int numberOfCopies) throws IOException { //Изменить количество копий книги по id
+        Scanner scanner = new Scanner(file);
+        String name;
+        String author;
+        int numberOfIssue;
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            if (line.contains(Integer.toString(id))) {
+                String[] splitLine = line.split(", ");
+                name = splitLine[0];
+                author = splitLine[1];
+                numberOfIssue = Integer.parseInt(splitLine[3]);
+                deleteBook(id);
+                Book newBook = new Book(id, name, author, numberOfCopies, numberOfIssue);
+                System.out.println("Данные изменены");
+            } else {
+                System.out.println("Книга не найдена");
+            }
         }
     }
 }
