@@ -1,11 +1,11 @@
 package library;
 
 public class Book {
-    Integer id;
-    String name;
-    String author;
-    Integer numberOfCopies;
-    Integer numberOfIssue;
+    private Integer id;
+    private String name;
+    private String author;
+    private Integer numberOfCopies;
+    private Integer numberOfIssue;
 
     Book (Integer id,String name, String author, Integer numberOfCopies) {
         this.id = id;
@@ -20,6 +20,30 @@ public class Book {
         this.name = name;
         this.author = author;
         this.numberOfCopies = numberOfCopies;
+        this.numberOfIssue = numberOfIssue;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public Integer getNumberOfCopies() {
+        return numberOfCopies;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public Integer getNumberOfIssue() {
+        return numberOfIssue;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setNumberOfIssue(Integer numberOfIssue) {
         this.numberOfIssue = numberOfIssue;
     }
 }

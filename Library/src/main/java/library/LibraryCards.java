@@ -10,76 +10,62 @@ import java.util.GregorianCalendar;
 import java.util.Scanner;
 
 public class LibraryCards {
-    File filePersons = new File("Persons");
-    File fileRent = new File("RentOfBook");
-    File fileBooks = new File("FileBooks");
+    private final Storage filePersons = new Storage("Persons");
+    private final Storage fileRent = new Storage("RentOfBook");
+    private final Storage fileBooks = new Storage("FileBooks");
     DateFormat df = new SimpleDateFormat("dd/MM/yyy");
+    public static final int COPIES = 2;
+    public static final int ISSUE = 3;
+    public static final int BEGIN_DATE_RENT = 2;
+    public static final int END_DATE_RENT = 3;
 
     void addPerson(Person human) throws IOException {
-        FileWriter fileWriter = new FileWriter(filePersons, true);
-        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-        bufferedWriter.write(human.idPerson + ", " + human.FIO + ", " + df.format(human.dateBegin.getTime()) + ", " + df.format(human.dateEnd.getTime()) + '\n');
-        bufferedWriter.close();
+        filePersons.writeToStorage(human.getIdPerson() + ", " + human.getFio() + ", " + df.format(human.getDateBegin().getTime()) + ", " + df.format(human.getDateEnd().getTime()) + '\n', true);
         System.out.println("Данные добавлены");
     }
 
-    void takeBook(int idPerson, int idBook) throws IOException {
-        Scanner scanner = new Scanner(fileBooks); //Проверяем, доступна ли книга с данным id
-        int k = 0;
+    void takeBook(Person human, Book book) throws IOException {
+        if (fileBooks.foundLine(book.getId())) { //Проверяем, доступна ли книга с данным id
+            System.out.println("Книги с таким ID нет в базе. Проверьте корректность введенных данных.");
+            return;
+        }
+        Scanner scanner = new Scanner(fileBooks.getFile());
         String[] splitLineBook = new String[0];
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            if (line.contains(Integer.toString(idBook))) {
-                k++;
+            if (line.contains(Integer.toString(book.getId()))) {
                 splitLineBook = line.split(", ");
-                if (splitLineBook[2].equals(splitLineBook[3])) {
+                if (splitLineBook[COPIES].equals(splitLineBook[ISSUE])) {
                     System.out.println("Данной книги пока нет в наличии");
                     return;
                 }
             }
         }
-        if (k == 0) {
-            System.out.println("Книги с таким ID нет в базе. Проверьте корректность введенных данных.");
-            return;
-        }
         scanner.close();
 
-        Scanner scanner1 = new Scanner(filePersons); //Проверяем, есть ли пользователь с таким id
-        int i = 0;
-        while (scanner1.hasNextLine()) {
-            String line = scanner1.nextLine();
-            if (line.contains(Integer.toString(idPerson))) {
-                i++;
-            }
-        }
-        if (i == 0) {
-            System.out.println("Пользователя с таким ID нет в системе.");
+        if (!filePersons.foundLine(human.getIdPerson())) {
+            System.out.println("Пользователя с таким ID нет в системе."); //Проверяем, есть ли пользователь с таким id
             return;
         }
-        scanner1.close();
 
-        Books myBooks = new Books();
-        myBooks.deleteBook(idBook);
-        Book myBook = new Book(Integer.parseInt(splitLineBook[0]), splitLineBook[1], splitLineBook[2], Integer.parseInt(splitLineBook[3]), Integer.parseInt(splitLineBook[4])+1);
-        myBooks.addBook(myBook);
+        Books myBooks = new Books(); //перенести в books //че?!
+        book.setNumberOfIssue(book.getNumberOfIssue() + 1);
+        myBooks.changeBook(book);
 
-        FileWriter fileWriter = new FileWriter(fileRent, true);
-        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
         GregorianCalendar pickUpDate = new GregorianCalendar();
         GregorianCalendar returnDate = new GregorianCalendar();
         returnDate.add(Calendar.MONTH, 1);
-        bufferedWriter.write(idPerson + ", " + idBook + ", " + df.format(pickUpDate.getTime()) + ", " + df.format(returnDate.getTime()));
-        bufferedWriter.close();
+        fileRent.writeToStorage(human.getIdPerson() + ", " + book.getId() + ", " + df.format(pickUpDate.getTime()) + ", " + df.format(returnDate.getTime()) + '\n', true);
         System.out.println("Книга отдана");
     }
 
-    void returnBook(int idPerson, int idBook) throws IOException {
-        Scanner scanner = new Scanner(fileRent); //Проверяем, есть ли записи с данными id
+    void returnBook(Person human, Book book) throws IOException {
+        Scanner scanner = new Scanner(fileRent.getFile()); //Проверяем, есть ли записи с данными id
         int k = 0;
         StringBuilder writeLine = new StringBuilder();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            if (line.contains(Integer.toString(idBook)) && line.contains((Integer.toString(idPerson)))) {
+            if (line.contains(Integer.toString(book.getId())) && line.contains((Integer.toString(human.getIdPerson())))) {
                 k++;
             } else {
                 writeLine.append(line).append('\n');
@@ -91,35 +77,22 @@ public class LibraryCards {
         }
         scanner.close();
 
-        Scanner scanner2 = new Scanner(fileBooks);
-        String[] splitLineBook = new String[0];
-        while (scanner2.hasNextLine()) {
-            String line = scanner2.nextLine();
-            if (line.contains(Integer.toString(idBook))) {
-                splitLineBook = line.split(", ");
-            }
-        }
-
         Books myBooks = new Books();
-        myBooks.deleteBook(idBook);
-        Book myBook = new Book(Integer.parseInt(splitLineBook[0]), splitLineBook[1], splitLineBook[2], Integer.parseInt(splitLineBook[3]), Integer.parseInt(splitLineBook[4])-1);
-        myBooks.addBook(myBook);
+        book.setNumberOfIssue(book.getNumberOfIssue() - 1);
+        myBooks.changeBook(book);
 
-        FileWriter fileWriter = new FileWriter(fileRent, false);
-        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-        bufferedWriter.write(writeLine.toString());
-        bufferedWriter.close();
+        fileRent.writeToStorage(writeLine.toString(), false);
         System.out.println("Книга возвращена");
     }
 
-    void renewBook(int idPerson, int idBook, int month) throws IOException, ParseException { //Продление книги
-        Scanner scanner = new Scanner(fileRent);
+    void renewBook(Person human, Book book, int month) throws IOException, ParseException { //Продление книги
+        Scanner scanner = new Scanner(fileRent.getFile());
         int k = 0;
         String[] splitLine = new String[0];
         StringBuilder writeLine = new StringBuilder();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            if (line.contains(Integer.toString(idBook)) && line.contains((Integer.toString(idPerson)))) {
+            if (line.contains(Integer.toString(book.getId())) && line.contains((Integer.toString(human.getIdPerson())))) {
                 k++;
                 splitLine = line.split(", ");
             } else {
@@ -132,15 +105,12 @@ public class LibraryCards {
         }
         scanner.close();
 
-        Date date = df.parse(splitLine[3]); //Продлеваем дату сдачи на указанное количество месяцев
+        Date date = df.parse(splitLine[END_DATE_RENT]); //Продлеваем дату сдачи на указанное количество месяцев
         Calendar endRentDate = Calendar.getInstance();
         endRentDate.setTime(date);
         endRentDate.add(Calendar.MONTH, month);
 
-        FileWriter fileWriter = new FileWriter(fileRent, false); //Перезаписываем файл
-        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-        bufferedWriter.write(writeLine.toString() + idPerson + ", " + idBook + ", " + splitLine[2] + ", " + df.format(endRentDate.getTime()) + '\n');
-        bufferedWriter.close();
+        fileRent.writeToStorage(writeLine.toString() + human.getIdPerson() + ", " + book.getId() + ", " + splitLine[BEGIN_DATE_RENT] + ", " + df.format(endRentDate.getTime()) + '\n', false);
         System.out.println("Книга продлена");
     }
 }

@@ -1,24 +1,36 @@
 package library;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 public class Person {
-    Integer idPerson;
-    String FIO;
-    GregorianCalendar dateBegin;
-    GregorianCalendar dateEnd;
+    private Integer idPerson;
+    private String fio;
+    private GregorianCalendar dateBegin;
+    private GregorianCalendar dateEnd;
 
-    Person (Integer idPerson, String FIO)
+    Person (Integer idPerson, String fio)
     {
         this.idPerson = idPerson;
-        this.FIO = FIO;
+        this.fio = fio;
         dateBegin = new GregorianCalendar();
         dateEnd = new GregorianCalendar();
         dateEnd.add(Calendar.YEAR, 5);
-//        DateFormat df = new SimpleDateFormat("dd/MM/yyy");
-//        System.out.println(this.idPerson + " " + this.FIO + " " + df.format(dateBegin.getTime()) + " " + df.format(dateEnd.getTime()));
+    }
+
+    public GregorianCalendar getDateBegin() {
+        return dateBegin;
+    }
+
+    public GregorianCalendar getDateEnd() {
+        return dateEnd;
+    }
+
+    public Integer getIdPerson() {
+        return idPerson;
+    }
+
+    public String getFio() {
+        return fio;
     }
 }
