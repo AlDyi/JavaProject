@@ -7,6 +7,10 @@ public class Book {
     private Integer numberOfCopies;
     private Integer numberOfIssue;
 
+    Book () {
+        this.numberOfIssue = 0;
+    }
+
     Book (Integer id,String name, String author, Integer numberOfCopies) {
         this.id = id;
         this.name = name;

@@ -4,8 +4,8 @@ import java.io.*;
 import java.util.Scanner;
 
 public class Storage {
-    private File file;
-    private String fileName;
+    public File file;
+    public String fileName;
 
     Storage (String fileName) {
         file = new File(fileName);
@@ -20,25 +20,26 @@ public class Storage {
         return fileName;
     }
 
-    void writeToStorage(String writeLine, boolean append) throws IOException { //запись в файл
+    void writeToStorage(String writeLine, boolean append) throws IOException { //запись в файл (Общий)
         FileWriter fileWriter = new FileWriter(file, append);
         BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
         bufferedWriter.write(writeLine);
         bufferedWriter.close();
     }
 
-    int countLines() throws FileNotFoundException { //посчитать количество строк в файле
+    int countLines() throws FileNotFoundException { //посчитать количество строк в файле (общий)
         Scanner scanner = new Scanner(file);
         int i = 0;
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
+            if (!line.isEmpty())
                 i++;
         }
         scanner.close();
         return i;
     }
 
-    boolean foundLine(int id) throws FileNotFoundException { //eсть ли этот id в файле
+    boolean foundLine(int id) throws FileNotFoundException { //eсть ли этот id в файле (Общий)
         Scanner scanner = new Scanner(file);
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
@@ -49,31 +50,5 @@ public class Storage {
         scanner.close();
         return false;
     }
-
-    String returnFoundLine(int id) throws FileNotFoundException { //eсть ли этот id в файле
-        Scanner scanner = new Scanner(file);
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            if (line.contains(Integer.toString(id))) {
-                return line;
-            }
-        }
-        scanner.close();
-        return null;
-    }
-
-    String[][] scannerFileReturnBuffer (Storage file, int id) throws FileNotFoundException {
-        Scanner scanner = new Scanner(file.getFile());
-        String[][] buffer = new String[file.countLines() - 1][5];
-        int j = 0;
-        while (scanner.hasNextLine() && j < buffer.length) {
-            String line = scanner.nextLine();
-            if (!line.contains(Integer.toString(id))) {
-                String[] splitLine = line.split(", ");
-                System.arraycopy(splitLine, 0, buffer[j], 0, buffer[j].length);
-                j++;
-            }
-        }
-        scanner.close();
-    }
 }
+
