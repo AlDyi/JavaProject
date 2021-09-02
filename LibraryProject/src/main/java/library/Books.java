@@ -1,8 +1,6 @@
 package library;
 
-import javax.validation.constraints.NotNull;
 import java.io.*;
-import java.util.*;
 
 
 public class Books {
@@ -17,19 +15,7 @@ public class Books {
         if (!fileBooks.foundLine(id)) {
             return "Данная книга не найдена";
         }
-        Scanner scanner = new Scanner(fileBooks.getFile());
-        String[][] buffer = new String[fileBooks.countLines() - 1][5];
-        int j = 0;
-        while (scanner.hasNextLine() && j < buffer.length) {
-            String line = scanner.nextLine();
-            if (!line.contains(Integer.toString(id))) {
-                String[] splitLine = line.split(", ");
-                System.arraycopy(splitLine, 0, buffer[j], 0, buffer[j].length);
-                j++;
-            }
-        }
-        scanner.close();
-
+        String[][] buffer = fileBooks.scannerFileReturnBuffer(id);
         StringBuilder lineInFile = new StringBuilder();
         for (String[] strings : buffer) {
             for (int l = 0; l < strings.length; l++) {
@@ -46,23 +32,12 @@ public class Books {
 
 
     String findBookAuthorOrName(String authorOrName) throws FileNotFoundException { //Найти книгу по автору или названию
-        Scanner scanner = new Scanner(fileBooks.getFile());
-        int i = 0;
-        StringBuilder findLine = new StringBuilder();
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            String lowerLine = line.toLowerCase();
-            if (lowerLine.contains(authorOrName.toLowerCase())) {
-                findLine.append(line).append('\n');
-                i++;
-            }
-        }
-        //System.out.println(findLine.toString());
-        scanner.close();
-        if (i == 0) {
+        String findLine = fileBooks.scannerFileReturnLine(authorOrName);
+        System.out.println(findLine);
+        if (findLine == null) {
             return "Данные не найдены!";
         } else {
-            return findLine.toString();
+            return findLine;
         }
     }
 

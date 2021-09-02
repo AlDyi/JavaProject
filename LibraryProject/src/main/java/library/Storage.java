@@ -50,6 +50,18 @@ public class Storage {
         return false;
     }
 
+    boolean foundLine(Person human, Book book) throws FileNotFoundException { //eсть ли этот id в файле
+        Scanner scanner = new Scanner(file);
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            if (line.contains(Integer.toString(human.getIdPerson())) && line.contains(Integer.toString(book.getId()))) {
+                return true;
+            }
+        }
+        scanner.close();
+        return false;
+    }
+
     String returnFoundLine(int id) throws FileNotFoundException { //eсть ли этот id в файле
         Scanner scanner = new Scanner(file);
         while (scanner.hasNextLine()) {
@@ -62,9 +74,9 @@ public class Storage {
         return null;
     }
 
-    String[][] scannerFileReturnBuffer (Storage file, int id) throws FileNotFoundException {
-        Scanner scanner = new Scanner(file.getFile());
-        String[][] buffer = new String[file.countLines() - 1][5];
+    String[][] scannerFileReturnBuffer(int id) throws FileNotFoundException {
+        Scanner scanner = new Scanner(file);
+        String[][] buffer = new String[countLines() - 1][5];
         int j = 0;
         while (scanner.hasNextLine() && j < buffer.length) {
             String line = scanner.nextLine();
@@ -75,5 +87,66 @@ public class Storage {
             }
         }
         scanner.close();
+        return buffer;
+    }
+
+    String scannerFileReturnLine(String authorOrName) throws FileNotFoundException {
+        Scanner scanner = new Scanner(file);
+        int i = 0;
+        StringBuilder findLine = new StringBuilder();
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            String lowerLine = line.toLowerCase();
+            if (lowerLine.contains(authorOrName.toLowerCase())) {
+                findLine.append(line).append('\n');
+                i++;
+            }
+        }
+        scanner.close();
+        if (i == 0) {
+            return null;
+        } else {
+            return findLine.toString();
+        }
+    }
+
+    String[] scannerFileReturnArray(Book book) throws FileNotFoundException {
+        Scanner scanner = new Scanner(file);
+        String[] splitLineBook = new String[0];
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            if (line.contains(Integer.toString(book.getId()))) {
+                splitLineBook = line.split(", ");
+            }
+        }
+        scanner.close();
+        return splitLineBook;
+    }
+
+    String[] scannerFileReturnArray(Person human, Book book) throws FileNotFoundException {
+        Scanner scanner = new Scanner(file);
+        String[] splitLineBook = new String[0];
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            if (line.contains(Integer.toString(book.getId())) && line.contains(Integer.toString(human.getIdPerson()))) {
+                splitLineBook = line.split(", ");
+            }
+        }
+        scanner.close();
+        return splitLineBook;
+    }
+
+    String scannerFileSkipLine(Person human, Book book) throws FileNotFoundException {
+        Scanner scanner = new Scanner(file);
+        StringBuilder writeLine = new StringBuilder();
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            if (!(line.contains(Integer.toString(book.getId())) && line.contains((Integer.toString(human.getIdPerson()))))) {
+                writeLine.append(line).append('\n');
+            }
+        }
+        scanner.close();
+        return writeLine.toString();
     }
 }
+
